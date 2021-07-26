@@ -3,31 +3,26 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-type User struct {
-	Mobile string `json:"mobile" binding:"required,numeric,len=11"`
-	Name   string `json:"name" binding:"required,min=5"`
-	Email  string `json:"email" binding:"required,email,min=5"`
-}
-
-func (u User) String() string {
-	return fmt.Sprintf("[Mobile=%s,Name=%s,Email=%s]", u.Mobile, u.Name, u.Email)
-}
-
 func main() {
-	r := gin.Default()
-	r.POST("/user", func(c *gin.Context) {
-		var user User
-		err := c.ShouldBindJSON(&user)
-		if err != nil {
-			c.String(http.StatusOK, err.Error())
-			return
-		}
-		c.JSON(200, user)
-	})
 
+	r := gin.New()
+
+	r.Use(RequestTime)
+	r.GET("/ping", func(c *gin.Context) {
+		fmt.Println("hello go")
+		c.String(http.StatusOK, "hello go")
+	})
 	r.Run(":8080")
+}
+
+func RequestTime(c *gin.Context) {
+	start := time.Now()
+	c.Next()//执行下一个处理函数
+	timeCost := time.Since(start).Milliseconds()
+	fmt.Println("请求耗时：", timeCost)
 }
